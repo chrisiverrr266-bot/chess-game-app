@@ -1,17 +1,19 @@
 'use client';
 
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 
 interface GameModeSelectorProps {
-  onSelectMode: (mode: '1v1' | 'bot', difficulty?: 'easy' | 'medium' | 'hard') => void;
+  onSelectMode: (mode: '1v1' | 'online' | 'bot', difficulty?: 'easy' | 'medium' | 'hard') => void;
 }
 
 export default function GameModeSelector({ onSelectMode }: GameModeSelectorProps) {
-  const [selectedMode, setSelectedMode] = useState<'1v1' | 'bot' | null>(null);
+  const { data: session } = useSession();
+  const [selectedMode, setSelectedMode] = useState<'1v1' | 'online' | 'bot' | null>(null);
 
-  const handleModeClick = (mode: '1v1' | 'bot') => {
-    if (mode === '1v1') {
-      onSelectMode('1v1');
+  const handleModeClick = (mode: '1v1' | 'online' | 'bot') => {
+    if (mode === '1v1' || mode === 'online') {
+      onSelectMode(mode);
     } else {
       setSelectedMode('bot');
     }
@@ -68,15 +70,31 @@ export default function GameModeSelector({ onSelectMode }: GameModeSelectorProps
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
       <button
         onClick={() => handleModeClick('1v1')}
         className="group bg-gradient-to-br from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white p-12 rounded-2xl shadow-2xl transition-all transform hover:scale-105"
       >
         <div className="text-6xl mb-4">👥</div>
-        <h2 className="text-3xl font-bold mb-4">1v1 Mode</h2>
-        <p className="text-lg text-blue-100">Play against a friend locally</p>
-        <p className="text-sm text-blue-200 mt-2">Take turns on the same device</p>
+        <h2 className="text-3xl font-bold mb-4">Local 1v1</h2>
+        <p className="text-lg text-blue-100">Play on same device</p>
+        <p className="text-sm text-blue-200 mt-2">Pass and play locally</p>
+      </button>
+
+      <button
+        onClick={() => handleModeClick('online')}
+        disabled={!session}
+        className="group bg-gradient-to-br from-cyan-600 to-blue-700 hover:from-cyan-500 hover:to-blue-600 text-white p-12 rounded-2xl shadow-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed relative"
+      >
+        <div className="text-6xl mb-4">🌐</div>
+        <h2 className="text-3xl font-bold mb-4">Online 1v1</h2>
+        <p className="text-lg text-cyan-100">Play with anyone online</p>
+        <p className="text-sm text-cyan-200 mt-2">Real-time multiplayer</p>
+        {!session && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
+            <span className="text-white font-bold text-lg">Sign in required</span>
+          </div>
+        )}
       </button>
 
       <button
@@ -85,7 +103,7 @@ export default function GameModeSelector({ onSelectMode }: GameModeSelectorProps
       >
         <div className="text-6xl mb-4">🤖</div>
         <h2 className="text-3xl font-bold mb-4">Play with Bot</h2>
-        <p className="text-lg text-purple-100">Challenge the AI opponent</p>
+        <p className="text-lg text-purple-100">Challenge the AI</p>
         <p className="text-sm text-purple-200 mt-2">Multiple difficulty levels</p>
       </button>
     </div>
